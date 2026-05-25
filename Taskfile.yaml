@@ -8,3 +8,52 @@ includes:
   docs:
     desc: Tasks for documentation generation and validation
     taskfile: ./taskfiles/docs/Taskfile.yaml
+
+tasks:
+  setup:
+    desc: "Install all dependencies (Python + GenLayer CLI)"
+    cmds:
+      - pip install -r requirements.txt
+      - npm install -g genlayer
+
+  test:
+    desc: "Run SentimentTracker tests"
+    cmds:
+      - pytest tests/test_sentiment_tracker.py -v
+
+  test:cov:
+    desc: "Run tests with coverage report"
+    cmds:
+      - pytest tests/ --cov=contracts --cov-report=term-missing
+
+  node:up:
+    desc: "Start the GenLayer local node"
+    cmds:
+      - genlayer up
+
+  node:stop:
+    desc: "Stop the GenLayer local node"
+    cmds:
+      - genlayer stop
+
+  deploy:localnet:
+    desc: "Deploy SentimentTracker to localnet"
+    cmds:
+      - genlayer network set localnet
+      - genlayer deploy --contract contracts/sentiment_tracker.py
+
+  deploy:testnet:
+    desc: "Deploy SentimentTracker to testnet"
+    cmds:
+      - genlayer network set testnet
+      - genlayer deploy --contract contracts/sentiment_tracker.py
+
+  schema:
+    desc: "Show the contract ABI/schema"
+    cmds:
+      - genlayer schema --contract contracts/sentiment_tracker.py
+
+  lint:
+    desc: "Lint Python files with ruff"
+    cmds:
+      - ruff check contracts/ tests/

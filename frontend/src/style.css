@@ -1,0 +1,39 @@
+/* SentimentTracker — Global Styles */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --card: #1a1a26;
+  --border: #2a2a3d;
+  --accent: #7c5cfc;
+  --accent2: #5c8dfc;
+  --green: #22c55e;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --gray: #6b7280;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --radius: 14px;
+  --glow: 0 0 40px rgba(124, 92, 252, 0.15);
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }

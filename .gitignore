@@ -22,3 +22,30 @@ Thumbs.db
 
 # Node modules (if any)
 node_modules/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# Deployment artifacts
+deployments/
+*.deployment.json
+
+# Frontend build output (Vite)
+dist/
+frontend/dist/
+
+# Frontend local env overrides
+frontend/.env.local
+frontend/.env.*.local
+
+# Virtual environments
+.venv/
+venv/
+env/

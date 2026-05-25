@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SentimentTracker — GenLayer Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0f;--surface:#13131a;--card:#1a1a26;--border:#2a2a3d;
+  --accent:#7c5cfc;--accent2:#5c8dfc;--green:#22c55e;--red:#ef4444;
+  --yellow:#f59e0b;--gray:#6b7280;--text:#e2e8f0;--muted:#94a3b8;
+  --radius:14px;--glow:0 0 40px rgba(124,92,252,0.15)
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;padding:18px 40px;
+  border-bottom:1px solid var(--border);background:rgba(10,10,15,0.95);
+  backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:10px;font-size:1.2rem;font-weight:700}
+.logo-icon{width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.nav-badge{padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:600;
+  background:rgba(124,92,252,0.15);border:1px solid rgba(124,92,252,0.3);color:var(--accent)}
+
+/* HERO */
+.hero{padding:60px 40px 40px;text-align:center}
+.hero h1{font-size:2.6rem;font-weight:700;
+  background:linear-gradient(135deg,#fff,var(--accent));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px}
+.hero p{color:var(--muted);font-size:1.05rem;max-width:520px;margin:0 auto 32px}
+
+/* CONTRACT INPUT */
+.contract-bar{display:flex;gap:12px;max-width:700px;margin:0 auto;align-items:center}
+.contract-bar input{flex:1;padding:14px 18px;border-radius:var(--radius);
+  border:1px solid var(--border);background:var(--card);color:var(--text);
+  font-family:monospace;font-size:.9rem;outline:none;transition:.2s}
+.contract-bar input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,92,252,.15)}
+.contract-bar input::placeholder{color:var(--gray)}
+.btn{padding:13px 22px;border-radius:var(--radius);border:none;cursor:pointer;
+  font-family:'Inter',sans-serif;font-size:.9rem;font-weight:600;transition:.2s}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.btn-primary:hover{opacity:.88;transform:translateY(-1px)}
+.btn-secondary{background:var(--card);border:1px solid var(--border);color:var(--text)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+
+/* STATS ROW */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:16px;max-width:900px;margin:40px auto 0;padding:0 40px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:22px;text-align:center;transition:.2s}
+.stat-card:hover{border-color:var(--accent);box-shadow:var(--glow)}
+.stat-num{font-size:2rem;font-weight:700;color:var(--accent)}
+.stat-label{font-size:.8rem;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+
+/* MAIN LAYOUT */
+.main{display:grid;grid-template-columns:380px 1fr;gap:24px;padding:32px 40px;max-width:1400px;margin:0 auto}
+@media(max-width:900px){.main{grid-template-columns:1fr}}
+
+/* ANALYZE PANEL */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px}
+.panel-title{font-size:1rem;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.panel-title span{font-size:1.1rem}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:6px;font-weight:500}
+.form-group input{width:100%;padding:12px 14px;border-radius:10px;
+  border:1px solid var(--border);background:var(--surface);
+  color:var(--text);font-family:'Inter',sans-serif;font-size:.9rem;outline:none;transition:.2s}
+.form-group input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,92,252,.1)}
+.form-group input::placeholder{color:var(--gray)}
+.quick-topics{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{padding:5px 12px;border-radius:20px;border:1px solid var(--border);
+  background:var(--surface);font-size:.78rem;cursor:pointer;color:var(--muted);transition:.2s}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.analyze-btn{width:100%;padding:14px;margin-top:8px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;font-family:'Inter',sans-serif;font-size:.95rem;font-weight:600;
+  cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.analyze-btn:hover{opacity:.88;transform:translateY(-1px)}
+.analyze-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* STATUS */
+.status{margin-top:16px;padding:12px 16px;border-radius:10px;font-size:.85rem;display:none;align-items:center;gap:8px}
+.status.loading{background:rgba(124,92,252,.1);border:1px solid rgba(124,92,252,.2);color:var(--accent);display:flex}
+.status.success{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);color:var(--green);display:flex}
+.status.error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--red);display:flex}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;
+  border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+
+/* RESULTS AREA */
+.results-area{display:flex;flex-direction:column;gap:20px}
+.result-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:22px;transition:.2s;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.result-card:hover{border-color:rgba(124,92,252,.4);box-shadow:var(--glow)}
+.result-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.result-topic{font-size:1.1rem;font-weight:700}
+.result-time{font-size:.75rem;color:var(--gray)}
+.sentiment-badge{padding:6px 14px;border-radius:20px;font-size:.82rem;font-weight:700;text-transform:capitalize}
+.badge-positive{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3)}
+.badge-negative{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.badge-neutral{background:rgba(148,163,184,.15);color:var(--muted);border:1px solid rgba(148,163,184,.3)}
+.badge-mixed{background:rgba(245,158,11,.15);color:var(--yellow);border:1px solid rgba(245,158,11,.3)}
+
+/* SCORE BAR */
+.score-section{margin:14px 0}
+.score-label{font-size:.78rem;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
+.score-bar-bg{height:8px;background:var(--surface);border-radius:4px;overflow:hidden}
+.score-bar-fill{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+.result-summary{font-size:.88rem;color:var(--muted);line-height:1.6;margin-top:10px;
+  padding:12px;background:var(--surface);border-radius:8px}
+.result-url{font-size:.75rem;color:var(--gray);margin-top:10px;
+  display:flex;align-items:center;gap:6px;word-break:break-all}
+.result-url a{color:var(--accent);text-decoration:none}
+.result-url a:hover{text-decoration:underline}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:60px 20px;color:var(--gray)}
+.empty-icon{font-size:3.5rem;margin-bottom:16px;display:block}
+.empty h3{font-size:1rem;font-weight:600;color:var(--muted);margin-bottom:6px}
+.empty p{font-size:.85rem}
+
+/* HISTORY PANEL */
+.history-list{max-height:380px;overflow-y:auto}
+.history-item{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px;border-radius:8px;cursor:pointer;transition:.15s;margin-bottom:4px}
+.history-item:hover{background:var(--surface)}
+.history-topic{font-size:.88rem;font-weight:500}
+.history-meta{font-size:.75rem;color:var(--gray)}
+.history-score{font-size:.8rem;font-weight:700}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* FOOTER */
+footer{text-align:center;padding:32px;color:var(--gray);font-size:.8rem;border-top:1px solid var(--border);margin-top:20px}
+footer a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon">📊</div>
+    <span>SentimentTracker</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span id="networkBadge" class="nav-badge">⚫ Disconnected</span>
+    <a href="https://docs.genlayer.com" target="_blank" class="btn btn-secondary" style="padding:8px 16px;font-size:.82rem">Docs ↗</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>AI Sentiment Intelligence</h1>
+  <p>Submit any topic and URL — the GenLayer AI analyzes real-time sentiment and stores results permanently on-chain.</p>
+  <div class="contract-bar">
+    <input id="contractInput" type="text" placeholder="Contract address: 0x..." value=""/>
+    <button class="btn btn-primary" onclick="connectContract()">Connect</button>
+  </div>
+</div>
+
+<div class="stats" id="statsRow">
+  <div class="stat-card"><div class="stat-num" id="statTotal">—</div><div class="stat-label">Total Analyses</div></div>
+  <div class="stat-card"><div class="stat-num" id="statTopics">—</div><div class="stat-label">Topics Tracked</div></div>
+  <div class="stat-card"><div class="stat-num" id="statLatestScore">—</div><div class="stat-label">Latest Score</div></div>
+  <div class="stat-card"><div class="stat-num" id="statLatestSentiment">—</div><div class="stat-label">Latest Sentiment</div></div>
+</div>
+
+<div class="main">
+  <!-- LEFT: Analyze + History -->
+  <div style="display:flex;flex-direction:column;gap:20px">
+    <div class="panel">
+      <div class="panel-title"><span>🔍</span> Analyze Topic</div>
+      <div class="form-group">
+        <label>Topic</label>
+        <input id="topicInput" type="text" placeholder="e.g. Bitcoin, GenLayer, AI regulation"/>
+        <div class="quick-topics">
+          <div class="chip" onclick="setTopic('Bitcoin')">Bitcoin</div>
+          <div class="chip" onclick="setTopic('Ethereum')">Ethereum</div>
+          <div class="chip" onclick="setTopic('GenLayer')">GenLayer</div>
+          <div class="chip" onclick="setTopic('AI')">AI</div>
+          <div class="chip" onclick="setTopic('Elon Musk')">Elon Musk</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Source URL</label>
+        <input id="urlInput" type="url" placeholder="https://en.wikipedia.org/wiki/..."/>
+        <div class="quick-topics">
+          <div class="chip" onclick="setUrl('https://en.wikipedia.org/wiki/Bitcoin')">Bitcoin Wiki</div>
+          <div class="chip" onclick="setUrl('https://en.wikipedia.org/wiki/Ethereum')">Ethereum Wiki</div>
+          <div class="chip" onclick="setUrl('https://genlayer.com')">GenLayer</div>
+          <div class="chip" onclick="setUrl('https://openai.com')">OpenAI</div>
+        </div>
+      </div>
+      <button class="analyze-btn" id="analyzeBtn" onclick="analyze()" disabled>
+        <span id="analyzeBtnText">🔗 Connect contract first</span>
+      </button>
+      <div class="status" id="analyzeStatus"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title"><span>📜</span> Query History</div>
+      <div class="form-group">
+        <label>Topic to query</label>
+        <input id="queryInput" type="text" placeholder="e.g. Bitcoin"/>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary" style="flex:1" onclick="queryLatest()">Latest</button>
+        <button class="btn btn-secondary" style="flex:1" onclick="queryHistory()">Full History</button>
+        <button class="btn btn-secondary" style="flex:1" onclick="queryAvg()">Avg Score</button>
+      </div>
+      <div class="status" id="queryStatus"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Results -->
+  <div class="results-area" id="resultsArea">
+    <div class="empty">
+      <span class="empty-icon">🧠</span>
+      <h3>No results yet</h3>
+      <p>Connect your contract and run an analysis to see AI sentiment results here.</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Built on <a href="https://genlayer.com" target="_blank">GenLayer</a> — AI-powered Intelligent Contracts &nbsp;|&nbsp;
+  <a href="https://docs.genlayer.com" target="_blank">Documentation</a> &nbsp;|&nbsp;
+  <a href="https://studio.genlayer.com" target="_blank">Studio</a>
+</footer>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────
+let contractAddress = '';
+let rpcUrl = 'http://127.0.0.1:4000/api';
+let results = [];
+
+// ─── Helpers ──────────────────────────────────────────────────────
+function setTopic(t){ document.getElementById('topicInput').value = t; }
+function setUrl(u){ document.getElementById('urlInput').value = u; }
+
+function showStatus(id, type, msg){
+  const el = document.getElementById(id);
+  el.className = `status ${type}`;
+  el.innerHTML = type === 'loading'
+    ? `<div class="spinner"></div><span>${msg}</span>`
+    : `<span>${type==='success'?'✅':'❌'}</span><span>${msg}</span>`;
+}
+
+function hideStatus(id){ document.getElementById(id).style.display = 'none'; }
+
+function scoreColor(score){
+  if(score >= 70) return '#22c55e';
+  if(score >= 45) return '#f59e0b';
+  return '#ef4444';
+}
+
+function badgeClass(sentiment){
+  const map = {positive:'badge-positive',negative:'badge-negative',neutral:'badge-neutral',mixed:'badge-mixed'};
+  return map[sentiment] || 'badge-neutral';
+}
+
+function timeAgo(ts){
+  if(!ts) return '';
+  const d = new Date(Number(ts)*1000);
+  return d.toLocaleString();
+}
+
+// ─── Connect ──────────────────────────────────────────────────────
+function connectContract(){
+  const addr = document.getElementById('contractInput').value.trim();
+  if(!addr){ alert('Please enter a contract address'); return; }
+  contractAddress = addr;
+  document.getElementById('networkBadge').textContent = '🟢 Connected';
+  document.getElementById('networkBadge').style.background = 'rgba(34,197,94,.15)';
+  document.getElementById('networkBadge').style.borderColor = 'rgba(34,197,94,.3)';
+  document.getElementById('networkBadge').style.color = '#22c55e';
+  document.getElementById('analyzeBtn').disabled = false;
+  document.getElementById('analyzeBtnText').textContent = '🚀 Analyze Sentiment';
+  loadStats();
+}
+
+// ─── RPC Call ─────────────────────────────────────────────────────
+async function rpcCall(method, params){
+  const res = await fetch(rpcUrl, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({jsonrpc:'2.0',id:1,method,params})
+  });
+  const json = await res.json();
+  if(json.error) throw new Error(json.error.message);
+  return json.result;
+}
+
+async function callContract(fn, args=[]){
+  return rpcCall('gen_call',{
+    to: contractAddress,
+    data: {method: fn, args}
+  });
+}
+
+// ─── Load Stats ───────────────────────────────────────────────────
+async function loadStats(){
+  try{
+    const total = await callContract('get_total_analyses');
+    document.getElementById('statTotal').textContent = total ?? '0';
+  } catch(e){ document.getElementById('statTotal').textContent = '?'; }
+}
+
+// ─── Analyze (Write) ──────────────────────────────────────────────
+async function analyze(){
+  const topic = document.getElementById('topicInput').value.trim();
+  const url   = document.getElementById('urlInput').value.trim();
+  if(!topic){ alert('Enter a topic'); return; }
+  if(!url)  { alert('Enter a source URL'); return; }
+
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('analyzeBtnText').textContent = 'Analyzing...';
+  showStatus('analyzeStatus','loading','Sending transaction to GenLayer validators...');
+
+  try{
+    // NOTE: Write transactions go through validators — use genlayer CLI for real writes.
+    // This simulates a read-based preview using get_latest after a write.
+    await rpcCall('gen_sendTransaction',{
+      to: contractAddress,
+      data: { method:'analyze', args:[topic, url] }
+    });
+
+    showStatus('analyzeStatus','success',`Transaction submitted! Validators are analyzing "${topic}"...`);
+
+    // Poll for result
+    setTimeout(async ()=>{
+      try{
+        const entry = await callContract('get_latest',[topic]);
+        if(entry) addResultCard(entry);
+        await loadStats();
+      } catch(e){}
+    }, 4000);
+
+  } catch(e){
+    // Fallback: show a demo card for UI preview
+    showStatus('analyzeStatus','error',`Note: Write txs require a running node. CLI command shown below.`);
+    addDemoCard(topic, url);
+  } finally {
+    document.getElementById('analyzeBtn').disabled = false;
+    document.getElementById('analyzeBtnText').textContent = '🚀 Analyze Sentiment';
+  }
+}
+
+// ─── Query (Read) ─────────────────────────────────────────────────
+async function queryLatest(){
+  const topic = document.getElementById('queryInput').value.trim();
+  if(!topic){ alert('Enter a topic to query'); return; }
+  showStatus('queryStatus','loading',`Fetching latest for "${topic}"...`);
+  try{
+    const entry = await callContract('get_latest',[topic]);
+    hideStatus('queryStatus');
+    if(!entry){ showStatus('queryStatus','error',`No analysis found for "${topic}"`); return; }
+    addResultCard(entry);
+  } catch(e){ showStatus('queryStatus','error',`Error: ${e.message}`); }
+}
+
+async function queryHistory(){
+  const topic = document.getElementById('queryInput').value.trim();
+  if(!topic){ alert('Enter a topic to query'); return; }
+  showStatus('queryStatus','loading',`Fetching history for "${topic}"...`);
+  try{
+    const entries = await callContract('get_history',[topic]);
+    hideStatus('queryStatus');
+    if(!entries || entries.length===0){ showStatus('queryStatus','error',`No history for "${topic}"`); return; }
+    clearResults();
+    entries.forEach(e => addResultCard(e));
+  } catch(e){ showStatus('queryStatus','error',`Error: ${e.message}`); }
+}
+
+async function queryAvg(){
+  const topic = document.getElementById('queryInput').value.trim();
+  if(!topic){ alert('Enter a topic to query'); return; }
+  showStatus('queryStatus','loading',`Computing average score for "${topic}"...`);
+  try{
+    const avg = await callContract('get_average_score',[topic]);
+    showStatus('queryStatus','success',`Average sentiment score for "${topic}": ${avg}/100`);
+    document.getElementById('statLatestScore').textContent = avg;
+  } catch(e){ showStatus('queryStatus','error',`Error: ${e.message}`); }
+}
+
+// ─── Render Result Card ───────────────────────────────────────────
+function clearResults(){
+  document.getElementById('resultsArea').innerHTML = '';
+}
+
+function addResultCard(entry){
+  const area = document.getElementById('resultsArea');
+  // Remove empty state
+  const empty = area.querySelector('.empty');
+  if(empty) empty.remove();
+
+  const score = parseInt(entry.score) || 50;
+  const sentiment = entry.sentiment || 'neutral';
+  const card = document.createElement('div');
+  card.className = 'result-card';
+  card.innerHTML = `
+    <div class="result-header">
+      <div>
+        <div class="result-topic">${entry.topic}</div>
+        <div class="result-time">${timeAgo(entry.timestamp)}</div>
+      </div>
+      <span class="sentiment-badge ${badgeClass(sentiment)}">${sentiment}</span>
+    </div>
+    <div class="score-section">
+      <div class="score-label">
+        <span>Sentiment Score</span>
+        <span style="color:${scoreColor(score)};font-weight:700">${score}/100</span>
+      </div>
+      <div class="score-bar-bg">
+        <div class="score-bar-fill" style="width:${score}%;background:${scoreColor(score)}"></div>
+      </div>
+    </div>
+    <div class="result-summary">💬 ${entry.summary || 'No summary available.'}</div>
+    <div class="result-url">
+      🔗 <a href="${entry.source_url}" target="_blank">${entry.source_url}</a>
+    </div>
+    ${entry.submitted_by ? `<div class="result-url">👤 ${entry.submitted_by}</div>` : ''}
+  `;
+  area.prepend(card);
+
+  // Update stat cards
+  document.getElementById('statLatestScore').textContent = score;
+  document.getElementById('statLatestSentiment').textContent = sentiment;
+}
+
+function addDemoCard(topic, url){
+  const demoEntry = {
+    topic, sentiment:'neutral', score:50,
+    summary:'Connect a running GenLayer node to get real AI analysis. Use the CLI command below to analyze this topic.',
+    source_url: url, submitted_by:'', timestamp: Math.floor(Date.now()/1000)
+  };
+  addResultCard(demoEntry);
+
+  // Show CLI hint
+  const area = document.getElementById('resultsArea');
+  const hint = document.createElement('div');
+  hint.className = 'result-card';
+  hint.style.borderColor = 'rgba(124,92,252,0.4)';
+  hint.innerHTML = `
+    <div class="panel-title"><span>💻</span> CLI Command</div>
+    <div class="result-summary" style="font-family:monospace;font-size:.82rem">
+      genlayer write --contract ${contractAddress || '&lt;ADDRESS&gt;'} analyze "${topic}" "${url}"
+    </div>
+  `;
+  area.prepend(hint);
+}
+</script>
+</body>
+</html>
